@@ -32,7 +32,7 @@ $(document).ready(function () {
 xmlHttp.open( "GET", ExplorerConfig.nodeURL+"get/transaction/"+hash, false );
 xmlHttp.send()
 
-if (JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type == 1) { window.location.replace("./transaction.html?hash="+hash) }
+if (JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type == 1) { window.location.replace("./BlockTransaction.html?hash="+hash) }
 
 if (JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type == 0) {
 

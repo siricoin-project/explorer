@@ -215,29 +215,10 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-lg-12">
-						<div class="card" id="v2Status">
-							<div class="card-header">
-								<h4 class="card-title">v2 Launch Status</h4>
-							</div>
-							<div class="table-responsive">
-								<table class="table card-table table-vcenter">
-									<tbody>
-										<tr>
-											<th>Swap Period</th>
-											<td id="swapPeriodIs"> </td>
-											<th>v2 Launch In (est.)</th>
-											<td id="v2LaunchIn"> </td>
-											<th>v1 Chain Stops In. (est.)</th>
-											<td id="v1DeathIn"> </td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
 						</div>
 					</div>
 				<div class="row row-deck row-cards">
-					<div class="col-lg-5">
+					<div class="col-lg">
 						<div class="card">
 							<div class="card-header">
 								<h4 class="card-title">Network Stats</h4>
@@ -251,10 +232,6 @@
 									<tr>
 										<th>Difficulty</th>
 										<td id="blockchainDifficulty"> </td>
-									</tr>
-									<tr>
-										<th>Network Hash Rate</th>
-										<td id="blockchainHashRate"> </td>
 									</tr>
 									<tr>
 										<th>Block Reward</th>
@@ -272,32 +249,15 @@
 										<th>Total Supply</th>
 										<td><a href="/supply.html"><span id="blockchainTotalSupply"></span></a></td>
 									</tr>
-									<tr>
-										<th>Current Emission</th>
-										<td id="blockchainSupplyEmission"> </td>
-									</tr>
-									<tr>
-										<th>Next Network Upgrade In (est.)</th>
-										<td id="nextForkIn"> </td>
-									</tr>
 								</tbody>
 							</table>
 						</div>
 					</div>
-					<div class="col-lg-7">
-						<div class="card">
-							<div class="card-header">
-								<h4 class="card-title">Network Chart</h4>
-							</div>
-							<div class="card-body">
-								<div id="blockchainChart" class="chart"></div>
-							</div>
-						</div>
-					</div>
+				
 					<div class="col-lg-12">
 						<div class="card">
 							<div class="card-header">
-								<h4 class="card-title">Transaction Pool <span id="transactionPoolCount" class="badge badge-pill bg-green">0</span></h4>
+								<h4 class="card-title">Last 10 transactions <span id="transactionPoolCount" class="badge badge-pill bg-green">0</span></h4>
 							</div>
 							<div class="table-responsive">
 								<table id="transactionPool" class="table table-vcenter card-table">
@@ -323,12 +283,11 @@
 									<thead>
 										<tr>
 											<th>Height</th>
-											<th>Size</th>
 											<th>Hash</th>
 											<th>Diff</th>
 											<th>Tx Count</th>
 											<th>Time</th>
-											<th>Pool</th>
+											<th>Miner</th>
 										</tr>
 									</thead>
 								</table>

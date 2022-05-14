@@ -33,7 +33,7 @@
 	<script src="./dist/js/config.js"></script>
 	<script src="./dist/js/common.js"></script>
 	<script src="./dist/js/TurtleCoinUtils.js"></script>
-	<script src="./dist/js/transaction.js"></script>
+	<script src="./dist/js/BlockTransaction.js"></script>
 </head>
 
 <body class="antialiased">
@@ -233,8 +233,20 @@
 										<tr>
 											<th>Amount</th>
 											<td id="transactionAmount"> </td>
-											<th>Parent transaction</th>
-											<td id="transactionParent"> </td>
+											<th>Time</th>
+											<td id="transactionTime"></td>
+										</tr>
+										<tr>
+											<th>Block Height</th>
+											<td id="blockHeight"></td>
+											<th>Block Hash</th>
+											<td id="blockHash"></td>
+										</tr>
+										<tr>
+											<th>Miner</th>
+											<td id="transactionMiner"></td>
+											<th>Reward</th>
+											<td id="transactionReward"></td>
 										</tr>
 										<tr id="poolNonceRow" style="display: none;">
 											<th>Pool Nonce</th>
@@ -249,7 +261,6 @@
 							</div>
 						</div>
 					</div>
-					
 			<footer class="footer footer-transparent">
 				<div class="container">
 					<div class="row text-center align-items-center flex-row-reverse">

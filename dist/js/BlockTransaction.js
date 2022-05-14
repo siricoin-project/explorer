@@ -32,23 +32,30 @@ $(document).ready(function () {
 xmlHttp.open( "GET", ExplorerConfig.nodeURL+"get/transaction/"+hash, false );
 xmlHttp.send()
 
-if (JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type == 1) { window.location.replace("./transaction.html?hash="+hash) }
+TX_Type = JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type
 
-if (JSON.parse(JSON.parse(xmlHttp.responseText).result.data).type == 0) {
+if (TX_Type == 1) {
 
-  $('#transactionHeaderHash').text(hash)
-  $('#transactionFrom').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).from)
-  $('#transactionTo').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).to)
-  $('#transactionAmount').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).tokens)
-  $('#transactionParent').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).parent)
-  /*$('#transactionAmount').text(numeral(txn.tx.amount_out / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00') + ' ' + ExplorerConfig.ticker)
-  $('#blockHeight').html('<a href="./?search=' + txn.block.height + '">' + numeral(txn.block.height).format('0,0') + '</a>')
-  $('#blockHash').html('<a href="./block.html?hash=' + txn.block.hash + '">' + txn.block.hash + '</a>')
-  $('#transactionNonce').text(txn.tx.nonce)
-  $('#transactionUnlockTime').text(numeral(txn.tx.unlock_time).format('0,0'))
-  $('#transactionPublicKey').text(txn.tx.publicKey)
-  $('#inputCount').text(txn.tx.inputs.length)
-  $('#outputCount').text(txn.tx.outputs.length) */ }
+$('#transactionHeaderHash').text(hash + " (Block transaction)")
+$('#transactionFrom').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).from)
+$('#transactionTo').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).to)
+$('#transactionAmount').text(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).tokens)
+$('#transactionTime').text((new Date(JSON.parse(JSON.parse(xmlHttp.responseText).result.data).blockData.timestamp * 1000)).toGMTString())
+
+blck_hash = JSON.parse((JSON.parse(xmlHttp.responseText).result.data)).blockData.miningData.proof
+
+xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/blockByHash/"+blck_hash, false );
+xmlHttp.send()
+$('#blockHeight').text(JSON.parse(xmlHttp.responseText).result.height)
+$('#blockHash').text(blck_hash)
+$('#transactionMiner').text(JSON.parse(xmlHttp.responseText).result.miningData.miner)
+$('#transactionReward').text(ExplorerConfig.blockReward + " " + ExplorerConfig.ticker)
+/*$('#transactionUnlockTime').text(numeral(txn.tx.unlock_time).format('0,0'))
+$('#transactionPublicKey').text(txn.tx.publicKey)
+$('#inputCount').text(txn.tx.inputs.length)
+$('#outputCount').text(txn.tx.outputs.length) */ }
+
+if (TX_Type == 0) { window.location.replace("./transaction.html?hash="+hash) }
 
 async function checkTransaction() {
   var recipient = $('#recipientAddress').val()

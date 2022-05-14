@@ -1,5 +1,7 @@
 var recentBlocks, topBlockHeight, blockchainChart, blockchainChartData, blockchainChartOptions
 
+var xmlHttp = new XMLHttpRequest();
+
 $(window).resize(function () {
   if (typeof blockchainChart !== 'undefined') {
     drawBlockchainChart()
@@ -97,7 +99,7 @@ $(document).ready(function () {
         return data
       }
     },{
-      targets: 6,
+      targets: 5,
       render: function(data, type, row, meta) {
         if (type === 'display' && data.url) {
           const parts = data.name.split('.')
@@ -183,33 +185,6 @@ function getAndDisplayLastBlockHeader() {
       const emiss = (curSupply / maxSupply) * 100
 
       $('#blockchainSupplyEmission').text(numeral(emiss).format('0.000000') + ' %')
-
-      const v2LaunchSeconds = (ExplorerConfig.v2LaunchHeight - data.height) * ExplorerConfig.blockTargetTime
-      const v1DeathSeconds = (ExplorerConfig.v1DeathHeight - data.height) * ExplorerConfig.blockTargetTime
-
-      const v2Launch = secondsToHumanReadable(v2LaunchSeconds)
-      const v1Death = secondsToHumanReadable(v1DeathSeconds)
-
-      const estimatedLaunch = (Math.floor(Date.now() / 1000) + v2LaunchSeconds)
-      const estimatedDeath = (Math.floor(Date.now() / 1000) + v1DeathSeconds)
-
-      $("#v2LaunchIn").text(v2Launch.days + 'd ' + v2Launch.hours + 'h ' + v2Launch.minutes + 'm ' + v2Launch.seconds + 's').prop('title', (new Date(estimatedLaunch * 1000)).toGMTString())
-      $("#v1DeathIn").text(v1Death.days + 'd ' + v1Death.hours + 'h ' + v1Death.minutes + 'm ' + v1Death.seconds + 's').prop('title', (new Date(estimatedDeath * 1000)).toGMTString())
-
-      if (data.height >= ExplorerConfig.v2LaunchHeight && data.height < ExplorerConfig.v1DeathHeight) {
-        $("#swapPeriodIs").text("Is Active")
-      } else if (data.height < ExplorerConfig.v2LaunchHeight) {
-        $("#swapPeriodIs").text("Has not started")
-      } else if (data.height >= ExplorerConfig.v1DeathHeight) {
-        $("#swapPeriodIs").text("Is Complete")
-      } else {
-        $("#swapPeriodIs").text("Is Inactive")
-      }
-
-	  setInterval(() => {
-		$("#swapPeriodIs").fadeOut(1000)
-		$("#swapPeriodIs").fadeIn(1000)
-	  }, 2000)
     }
   })
 }
@@ -240,48 +215,30 @@ function updateTransactionPool(table) {
 }
 
 function updateRecentBlocks(table, height) {
-  $.ajax({
-    url: ExplorerConfig.apiBaseUrl + '/block/headers/' + height,
-    dataType: 'json',
-    type: 'GET',
-    cache: 'false',
-    success: function (data) {
       table.clear()
-
-      var chartData = [
-        ['Block Time', 'Difficulty', 'Block Size', 'Txn Count']
-      ]
-
-      for (var i = 0; i < data.length; i++) {
-        var block = data[i]
-        chartData.push(
-          [(new Date(block.timestamp * 1000 + ((new Date()).getTimezoneOffset() * 60 * 1000))), parseInt(block.difficulty), parseInt(block.size), parseInt(block.tx_count)]
-        )
+      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/length", false );
+      xmlHttp.send()
+      Block_Height = JSON.parse(xmlHttp.responseText).result
+      
+      for (var i = 0; i < 10; i++) {
+        Block_to_Search = Block_Height-i-1
+        console.log(ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search)
+        xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search, false );
+        xmlHttp.send()
+        Block_Data = JSON.parse(xmlHttp.responseText)
+        
 
         table.row.add([
-          numeral(block.height).format('0,0'),
-          numeral(block.size).format('0,0'),
-          block.hash,
-          numeral(block.difficulty/1000/1000/1000).format('0,0.000') + ' B',
-          numeral(block.tx_count).format('0,0'),
-          (new Date(block.timestamp * 1000)).toLocaleTimeString(),
+          numeral(Block_Data.result.height).format('0,0'),
+          Block_Data.result.miningData.proof,
+          numeral(Block_Data.result.miningData.difficulty/1000/1000/1000).format('0,0.000') + ' B',
+          numeral(Object.keys(Block_Data.result.transactions).length).format('0,0'),
+          (new Date(Block_Data.result.timestamp * 1000)).toLocaleTimeString(),
           {
-            url: block.poolURL || false,
-            name: block.poolName || 'Unknown'
+            url: "",
+            name: Block_Data.result.miningData.miner
           }
         ])
       }
-
-      blockchainChartData = google.visualization.arrayToDataTable(chartData)
       table.draw(false)
-      drawBlockchainChart()
     }
-  })
-}
-
-function drawBlockchainChart() {
-  try {
-    blockchainChart = new google.visualization.AreaChart(document.getElementById('blockchainChart'))
-    blockchainChart.draw(blockchainChartData, blockchainChartOptions)
-  } catch (e) {}
-}

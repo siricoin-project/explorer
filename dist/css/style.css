@@ -11,7 +11,7 @@
 }
 
 .navbar-dark {
-	background: #43b380;
+	background: #3056D3;
 }
 
 .navbar-nav .nav-item {
@@ -19,16 +19,16 @@
 }
 
 a {
-	color: #43b380;
+	color: #3056D3;
 }
 
 a:hover {
-	color: #3ca173;
+	color: #3056D3;
 }
 
 .btn-primary {
-	background-color: #43b380;
-	border-color: #43b380;
+	background-color: #3056D3;
+	border-color: #3056D3;
 }
 
 .btn-primary:hover,
@@ -36,8 +36,8 @@ a:hover {
 .btn-primary:active,
 .btn-primary.focus,
 .btn-primary:focus {
-	background-color: #3ca173;
-	border-color: #3ca173;
+	background-color: #3056D3;
+	border-color: #3056D3;
 }
 
 .chart#blockchainChart {
@@ -50,7 +50,7 @@ a:hover {
 
 .table th {
 	font-weight: 600;
-	color: #354052;
+	color: #3056D3;
 }
 
 @media (min-width: 64rem) {
@@ -60,7 +60,7 @@ a:hover {
 }
 
 .form-control.is-danger {
-	border-color: #cd201f;
+	border-color: #3056D3;
 }
 
 .form-control.is-success {
@@ -68,14 +68,14 @@ a:hover {
 }
 
 .bg-green {
-	background: #43b380;
+	background: #3056D3;
 }
 
 #nodes i.has-trtl-green,
 #nodes i.has-trtl-red,
 #pools i.has-trtl-green,
 #nodes i.has-trtl-red {
-	background: #43b380;
+	background: #3056D3;
 	display: inline-block;
 	width: .5rem;
 	height: .5rem;
@@ -121,11 +121,11 @@ a:hover {
 }
 
 .theme-dark table th {
-	color: #f5f7fb;
+	color: #3056D3;
 }
 
 .theme-dark .chart rect {
-    fill: #354052;
+    fill: #3056D3;
 }
 
 .theme-dark .chart text {
@@ -135,7 +135,7 @@ a:hover {
 }
 
 .is-ours {
-	background: #43b380;
+	background: #3056D3;
 }
 
 #transactionPool tbody tr td:nth-child(4),
@@ -155,6 +155,6 @@ a:hover {
 }
 
 #v2Status, #v2Status tbody tr th {
-	background: #8e7cc3;
+	background: #3056D3;
 	color: #f5f7fb;
 }

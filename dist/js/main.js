@@ -2,12 +2,6 @@ var recentBlocks, topBlockHeight, blockchainChart, blockchainChartData, blockcha
 
 var xmlHttp = new XMLHttpRequest();
 
-$(window).resize(function () {
-  if (typeof blockchainChart !== 'undefined') {
-    drawBlockchainChart()
-  }
-})
-
 $(document).ready(function () {
   checkForSearchTerm()
 
@@ -71,42 +65,51 @@ $(document).ready(function () {
 
   localData.transactionPool = $('#transactionPool').DataTable({
     columnDefs: [{
-      targets: [0, 1, 2, 3],
-      searchable: false
-    }],
-    order: [
-      [1, 'desc'],
-      [2, 'desc'],
-      [0, 'asc']
-    ],
-    searching: false,
-    info: false,
-    paging: false,
-    lengthMenu: -1,
-    language: {
-      emptyTable: "No Transactions Currently in the Transaction Pool"
-    },
-    autoWidth: false
-  }).columns.adjust().responsive.recalc()
-
-  recentBlocks = $('#recentBlocks').DataTable({
-    columnDefs: [{
-      targets: 2,
-      render: function (data, type, row, meta) {
-        if (type === 'display') {
-          data = '<a href="./block.html?hash=' + data + '">' + data + '</a>'
-        }
-        return data
-      }
-    },{
-      targets: 5,
-      render: function(data, type, row, meta) {
+      targets: 3,
+      render: function(data, type) {
         if (type === 'display' && data.url) {
           const parts = data.name.split('.')
           while (parts.length > 2) {
             parts.shift()
           }
           data = '<a href="' + data.url + '" target="_blank">' + parts.join('.') + '</a>'
+        } else if (type === 'display') {
+          data = data.name
+        }
+        return data
+      }
+    }],
+    order: [
+      [0, 'desc']
+    ],
+    searching: false,
+    info: false,
+    paging: false,
+    lengthMenu: -1,
+    language: {
+      emptyTable: "No recent tranactions found"
+    },
+    autoWidth: false
+  }).columns.adjust().responsive.recalc()
+
+  recentBlocks = $('#recentBlocks').DataTable({
+    columnDefs: [{
+      targets: 1,
+      render: function (data, type) {
+        if (type === 'display') {
+          data = '<a href="./block.html?hash=' + data + '">' + data + '</a>' // TODO: UPDATE BLOCK 
+        }
+        return data
+      }
+    },{
+      targets: 5,
+      render: function(data, type) {
+        if (type === 'display' && data.url) {
+          const parts = data.name.split('.')
+          while (parts.length > 2) {
+            parts.shift()
+          }
+          data = '<a href="' + "data.url" + '" target="_blank">' + parts.join('.') + '</a>'
         } else if (type === 'display') {
           data = data.name
         }
@@ -150,79 +153,71 @@ $(document).ready(function () {
 })
 
 function getAndDisplayLastBlockHeader() {
-  $.ajax({
-    url: ExplorerConfig.apiBaseUrl + '/block/header/top',
-    dataType: 'json',
-    type: 'GET',
-    cache: 'false',
-    success: function (data) {
-      if (data.height !== topBlockHeight) {
-        topBlockHeight = data.height
-        updateRecentBlocks(recentBlocks, topBlockHeight)
+
+      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/length", false );
+      xmlHttp.send()
+      __height = JSON.parse(xmlHttp.responseText).result
+      if (__height !== topBlockHeight) {
+        topBlockHeight = __height
+        updateRecentBlocks(recentBlocks)
       }
-      $('#blockchainHeight').text(numeral(data.height).format('0,0'))
-      $('#blockchainDifficulty').text(numeral(data.difficulty).format('0,0'))
-      $('#blockchainHashRate').text(numeral(data.difficulty / ExplorerConfig.blockTargetTime).format('0,0') + ' H/s')
-      $('#blockchainReward').text(numeral(data.reward / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00') + ' ' + ExplorerConfig.ticker)
-      $('#blockchainTransactions').text(numeral(data.alreadyGeneratedTransactions).format('0,0'))
-      $('#blockchainCirculatingSupply').text(numeral(data.alreadyGeneratedCoins / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00') + ' ' + ExplorerConfig.ticker)
-      $('#blockchainTotalSupply').text(numeral(ExplorerConfig.v1MaxSupply / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00') + ' ' + ExplorerConfig.ticker)
 
-      var nextFork
-      for (var i = ExplorerConfig.forkHeights.length; i > 0; i--) {
-        if (data.height >= ExplorerConfig.forkHeights[i]) {
-          nextFork = ExplorerConfig.forkHeights[i + 1]
-          break
-        }
-      }
-      var forkInSeconds = (nextFork - data.height) * ExplorerConfig.blockTargetTime
-      var forkTime = secondsToHumanReadable(forkInSeconds)
-      var estimatedFork = (Math.floor(Date.now() / 1000) + forkInSeconds)
-      $('#nextForkIn').text(forkTime.days + 'd ' + forkTime.hours + 'h ' + forkTime.minutes + 'm ' + forkTime.seconds + 's').prop('title', (new Date(estimatedFork * 1000)).toGMTString())
-
-      const maxSupply = ExplorerConfig.v1MaxSupply
-      const curSupply = data.alreadyGeneratedCoins
-      const emiss = (curSupply / maxSupply) * 100
-
-      $('#blockchainSupplyEmission').text(numeral(emiss).format('0.000000') + ' %')
+      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"stats", false );
+      xmlHttp.send()
+      _stats = JSON.parse(xmlHttp.responseText)
+      $('#blockchainHeight').text(__height)
+      $('#blockchainDifficulty').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(_stats.result.chain.difficulty))
+      $('#blockchainReward').text(ExplorerConfig.blockReward)
+      $('#blockchainTransactions').text(_stats.result.coin.transactions)
+      $('#blockchainCirculatingSupply').text(_stats.result.coin.supply)
+      $('#blockchainTotalSupply').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(ExplorerConfig.maxSupply))
     }
-  })
-}
+  
 
 function updateTransactionPool(table) {
-  $.ajax({
-    url: ExplorerConfig.apiBaseUrl + '/transaction/pool',
-    dataType: 'json',
-    type: 'GET',
-    cache: 'false',
-    success: function (data) {
-      $("#transactionPoolCount").text(data.length)
       table.clear()
-      for (var i = 0; i < data.length; i++) {
-        var txn = data[i]
+      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"get/nLastTxs/10", false );
+      xmlHttp.send()
+      _transactions = JSON.parse(xmlHttp.responseText)
+
+      for (var i = 0; i < _transactions.result.length; i++) {
+
+        const result = _transactions.result[i];
+        const hash = result.hash;
+        const dataJSON = JSON.parse(result.data);
+        if (dataJSON.type == 1) { _Type = "Miner Payout"; _To = JSON.parse(JSON.stringify(dataJSON)).blockData.miningData.miner; _Amount = ExplorerConfig.blockReward }
+        if (dataJSON.type == 0) { _Type = "Transaction"; _To = dataJSON.to; _Amount = dataJSON.tokens }
+
         table.row.add([
-          numeral(txn.amount / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00'),
-          numeral(txn.fee / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00'),
-          numeral(txn.size).format('0,0'),
-          txn.txnHash
-        ])
-      }
-      table.draw(false)
+          _Type,
+          _Amount,
+          _To,
+          {
+            url: "transaction.html?hash=" + hash,
+            name: hash
+          }
+        ]) 
 
-      checkForSearchTerm()
+    
     }
-  })
-}
+ 
+    table.draw(false)
 
-function updateRecentBlocks(table, height) {
+    checkForSearchTerm()
+
+      }
+
+    
+
+
+function updateRecentBlocks(table) {
       table.clear()
       xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/length", false );
       xmlHttp.send()
       Block_Height = JSON.parse(xmlHttp.responseText).result
-      
+
       for (var i = 0; i < 10; i++) {
         Block_to_Search = Block_Height-i-1
-        console.log(ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search)
         xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search, false );
         xmlHttp.send()
         Block_Data = JSON.parse(xmlHttp.responseText)

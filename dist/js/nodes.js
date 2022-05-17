@@ -53,7 +53,7 @@ $(document).ready(function () {
 getAndDrawNodeStats()
 })
 
-function getAndDrawNodeStats () {
+async function getAndDrawNodeStats () {
 
 
       
@@ -69,11 +69,12 @@ function getAndDrawNodeStats () {
 
         if (node.protocol == "https") {_https = true} else {_https = false}
 
-        xmlHttp.open( "GET", node.protocol + "://" + node.URL+"/stats", false );
-        xmlHttp.send()
+        response = await fetch(node.protocol + "://" + node.URL+"/stats");
+        _data = await response.text();
+
         
-        _height = JSON.parse(xmlHttp.responseText).result.chain.length
-        _txs = JSON.parse(xmlHttp.responseText).result.coin.transactions
+        _height = JSON.parse(_data).result.chain.length
+        _txs = JSON.parse(_data).result.coin.transactions
 
         localData.nodeTable.row.add([
           {

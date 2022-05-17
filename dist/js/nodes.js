@@ -1,3 +1,15 @@
+nodes = [{
+  "name": "Main-net",
+  "protocol": "https",
+  "URL": "node-1.siricoin.tech:5006"
+}, {
+  "name": "Junaid shard chain",
+  "protocol": "http",
+  "URL": "47.250.59.81:5005"
+}]
+
+var xmlHttp = new XMLHttpRequest();
+
 $(document).ready(function () {
   localData.nodeTable = $('#nodes').DataTable({
     searching: false,
@@ -5,7 +17,7 @@ $(document).ready(function () {
     paging: false,
     lengthMenu: -1,
     language: {
-      emptyTable: 'No Community Nodes Found'
+      emptyTable: 'No Nodes Found'
     },
     columnDefs: [
       {
@@ -30,104 +42,58 @@ $(document).ready(function () {
           return data
         }
       },
-      {
-        targets: [5],
-        type: 'num',
-        render: function (data, type, row, meta) {
-          if (type === 'display') {
-            if (!data.offline) {
-              data = data.ins + '/' + data.outs + ' (' + data.tx + ')'
-            } else {
-              data = ''
-            }
-          } else if (type === 'sort') {
-            data = data.ins + data.outs
-          }
-          return data
-        }
-      },
-      {
-        targets: [6],
-        type: 'num',
-        render: function (data, type, row, meta) {
-          if (type === 'display') {
-            data = '<span title="'+data.percent+'%" style="font-size: 0.8em;">' + data.hist + '</span>'
-          } else if (type === 'sort') {
-            data = data.percent
-          }
-          return data
-        }
-      }
     ],
     order: [
-      [6, 'dsc'],
-      [0, 'asc']
+      [0, 'dsc']
     ],
     autoWidth: false
   }).columns.adjust().responsive.recalc().draw(false)
 
-  google.charts.setOnLoadCallback(function () {
-    getAndDrawNodeStats()
-  })
+
+getAndDrawNodeStats()
 })
 
 function getAndDrawNodeStats () {
-  $.ajax({
-    url: ExplorerConfig.apiBaseUrl + '/node/stats',
-    dataType: 'json',
-    method: 'GET',
-    cache: 'false',
-    success: function (data) {
-      localData.nodeTable.clear()
-      for (var i = 0; i < data.length; i++) {
-        var node = data[i]
-        var hist = []
 
-        if (node.history) {
-          for (var j = 0; j < node.history.length; j++) {
-            var evt = node.history[j]
-            if (evt.online) {
-              hist.unshift('<i class="fas fa-circle has-trtl-green"></i>')
-            } else {
-              hist.unshift('<i class="far fa-circle has-trtl-red"></i>')
-            }
-          }
-        }
+
+      
+
+      localData.nodeTable.clear()
+      for (var i = 0; i < nodes.length; i++) {
+
+
+        var node = nodes[i]
+        console.log(node.URL)
+
+        hist = []
+
+        if (node.protocol == "https") {_https = true} else {_https = false}
+
+        xmlHttp.open( "GET", node.protocol + "://" + node.URL+"/stats", false );
+        xmlHttp.send()
+        
+        _height = JSON.parse(xmlHttp.responseText).result.chain.length
+        _txs = JSON.parse(xmlHttp.responseText).result.coin.transactions
 
         localData.nodeTable.row.add([
           {
-            name: node.name,
-            address: node.fee.address || node.url
+            name: node.name + "",
+            address: node.protocol + "://" + node.URL
           },
           {
-            host: node.url,
-            port: node.port,
-            ssl: (node.ssl) ? ' <i class="fas fa-user-shield has-trtl-green" title="SSL Required"></i>' : '',
-            cache: (node.cache) ? ' <i class="fas fa-tachometer-alt has-trtl-green" title="Blockchain Cache"></i>' : ''
+            host: (node.URL).split(':')[0],
+            port: (node.URL).split(':')[1],
+            ssl: _https ? ' <i class="fas fa-user-shield has-trtl-green" title="HTTPS"></i>' : '',
+            cache: false ? ' <i class="fas fa-tachometer-alt has-trtl-green" title="Blockchain Cache"></i>' : ''
           },
-          (node.version && node.version !== 'offline') ? numeral(node.fee.amount / Math.pow(10, ExplorerConfig.decimalPoints)).format('0,0.00') : '',
-          (node.version && node.version !== 'offline') ? node.version : '',
-          (node.version && node.version !== 'offline') ? numeral(node.height).format('0,0') : '',
-          {
-            offline: !(node.version && node.version !== 'offline'),
-            ins: node.connectionsIn,
-            outs: node.connectionsOut,
-            tx: numeral(node.txPoolSize).format('0,0')
-          },
-          {
-            hist: hist.join(''),
-            percent: numeral(node.availability).format('0,0.00')
-          }
+          _height,
+          _txs
         ])
       }
       localData.nodeTable.draw(false)
       jdenticon()
-    },
-    error: function () {
-      alert('Could not retrieve node statistics from + ' + ExplorerConfig.apiBaseUrl + '/node/stats')
     }
-  })
   setTimeout(() => {
     getAndDrawNodeStats()
   }, 15000)
-}
+

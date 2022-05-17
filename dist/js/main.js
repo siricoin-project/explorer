@@ -129,7 +129,6 @@ $(document).ready(function () {
     autoWidth: false
   }).columns.adjust().responsive.recalc()
 
-  google.charts.setOnLoadCallback(function () {
     getAndDisplayLastBlockHeader()
 
     function setLastBlockTimer() {
@@ -149,7 +148,6 @@ $(document).ready(function () {
       }, 15000)
     }
     setTransactionPoolTimer()
-  })
 })
 
 function getAndDisplayLastBlockHeader() {
@@ -184,11 +182,9 @@ function updateTransactionPool(table) {
       while (ctn) {
         i = i-1
         if(i == -1) {ctn = false; break;}
-       // console.log(i)
         ____result = ____transactions.result[i];
         ____hash = ____result.hash;
         ____dataJSON = JSON.parse(____result.data);
-        console.log(____dataJSON.type)
         if (____dataJSON.type == 2) { _Type = "Unknown"; _To = "Unknown"; _Amount = "Unknown"; URL_link = null }
         if (____dataJSON.type == 1) { _Type = "Miner Payout"; _To = JSON.parse(JSON.stringify(____dataJSON)).blockData.miningData.miner; _Amount = ExplorerConfig.blockReward; URL_link = "BlockTransaction.html?hash=" + ____hash }
         if (____dataJSON.type == 0) { _Type = "Transaction"; _To = ____dataJSON.to; _Amount = ____dataJSON.tokens; URL_link = "transaction.html?hash=" + ____hash}

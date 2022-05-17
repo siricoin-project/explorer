@@ -1,11 +1,5 @@
 const localData = {}
 
-if (typeof google !== 'undefined') {
-  google.charts.load('current', {
-    packages: ['corechart']
-  })
-}
-
 $(document).ready(function () {
   $('#searchButton').click(function () {
     searchForTerm($('#searchValue').val())

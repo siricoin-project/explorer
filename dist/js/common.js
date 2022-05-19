@@ -28,148 +28,54 @@ function checkForSearchTerm () {
   }
 }
 
-function searchTransactionPool (term) {
-  var found = false
-  if (localData.transactionPool) {
-    /* Clear any highlights */
-    localData.transactionPool.rows().every(function (idx, tableLoop, rowLoop) {
-      $(localData.transactionPool.row(idx).nodes()).removeClass('is-ours')
-    })
-
-    localData.transactionPool.rows().every(function (idx, tableLoop, rowLoop) {
-      if (localData.transactionPool.row(idx).data()[3] === term) {
-        $(localData.transactionPool.row(idx).nodes()).addClass('is-ours')
-        found = true
-      }
-    })
-  }
-
-  return found
-}
 
 function isHash (str) {
   const regex = new RegExp('^[0-9a-fA-F]{64}$')
-  return regex.test(str)
+  return regex.test(str.replace("0x", ""))
 }
 
-function getCurrentNetworkHashRateLoop () {
-  $.ajax({
-    url: ExplorerConfig.apiBaseUrl + '/block/header/top',
-    dataType: 'json',
-    type: 'GET',
-    cache: 'false',
-    success: function (header) {
-      localData.networkHashRate = Math.floor(header.difficulty / ExplorerConfig.blockTargetTime)
-      $('#globalHashRate').text(numeral(localData.networkHashRate).format('0,0') + ' H/s')
-      setTimeout(function () {
-        getCurrentNetworkHashRateLoop()
-      }, 15000)
-    },
-    error: function () {
-      setTimeout(function () {
-        getCurrentNetworkHashRateLoop()
-      }, 15000)
-    }
-  })
-}
-
-function searchForTerm (term) {
+async function searchForTerm (term) {
   term = term.trim()
   /* Allow commas in a height search */
   term = term.replace(',', '')
 
-  if (parseInt(term).toString() === term) {
-    /* This should be height so we know to perform a search on height */
-    $.ajax({
-      url: ExplorerConfig.apiBaseUrl + '/block/header/' + term + '?random=' + (new Date()).getTime(),
-      dataType: 'json',
-      type: 'GET',
-      cache: 'false',
-      success: function (data) {
-        window.location = './block.html?hash=' + data.hash
-      },
-      error: function () {
-        setSearchValueErrorState(true)
-      }
-    })
-  } else if (isHash(term)) {
-    /* Great, we're pretty sure that this is a hash, let's see if we can find out what type */
 
-    /* Let's see if it's a block hash first? */
-    $.ajax({
-      url: ExplorerConfig.apiBaseUrl + '/block/header/' + term + '?random=' + (new Date()).getTime(),
-      dataType: 'json',
-      type: 'GET',
-      cache: 'false',
-      success: function (data) {
-        /* We found a block that matched, let's go take a look at it */
-        window.location = './block.html?hash=' + data.hash
-      },
-      error: function () {
-        /* It's not a block, is it a transaction? */
-        $.ajax({
-          url: ExplorerConfig.apiBaseUrl + '/transaction/' + term + '?random=' + (new Date()).getTime(),
-          dataType: 'json',
-          type: 'GET',
-          cache: 'false',
-          success: function (data) {
-            /* Great, we found a matching transaction, let's go take a look at it */
-            window.location = './transaction.html?hash=' + data.tx.hash
-          },
-          error: function () {
-            /* It's not a transaction hash, must be a paymentId */
-            $.ajax({
-              url: ExplorerConfig.apiBaseUrl + '/transactions/' + term + '?random=' + (new Date()).getTime(),
-              dataType: 'json',
-              type: 'GET',
-              cache: 'false',
-              success: function (data) {
-                if (data.length !== 0) {
-                  /* It's a payment Id, let's display the list */
-                  window.location = './paymentid.html?id=' + term
-                } else {
-                  $.ajax({
-                    url: ExplorerConfig.apiBaseUrl + '/keyImage/' + term + '?random=' + (new Date()).getTime(),
-                    dataType: 'json',
-                    type: 'GET',
-                    cache: 'false',
-                    success: function(data) {
-                      /* Great, we found a match, now redirect there */
-                      window.location = './transaction.html?hash=' + data.tx + '&keyImage=' + data.keyImage
-                    },
-                    error: function () {
-                      if (!searchTransactionPool(term)) {
-                        setSearchValueErrorState(true)
-                      }
-                    }
-                  })
-                }
-              },
-              error: function () {
-                $.ajax({
-                  url: ExplorerConfig.apiBaseUrl + '/keyImage/' + term + '?random=' + (new Date()).getTime(),
-                  dataType: 'json',
-                  type: 'GET',
-                  cache: 'false',
-                  success: function(data) {
-                    /* Great, we found a match, now redirect there */
-                    window.location = './transaction.html?hash=' + data.tx + '&keyimage=' + data.keyImage
-                  },
-                  error: function () {
-                    if (!searchTransactionPool(term)) {
-                      setSearchValueErrorState(true)
-                    }
-                  }
-                })
-              }
-            })
-          }
-        })
+  // Check if block height
+  if (parseInt(term).toString() === term) {
+    window.location.href = "./block.html?hash="+term
+    
+  } 
+  else {
+    // If it's a hash of some sort
+    if (isHash(term)) {
+
+      if (!term.startsWith("0x")) { term = "0x" + term }
+      response = await fetch(ExplorerConfig.nodeURL + "get/transaction/"+term);
+      _data = await response.text();
+
+
+
+      // If a transaction was found
+      if (JSON.parse(_data).success) {
+        if (JSON.parse(JSON.parse(_data).result.data).type == 0) {window.location.href = "./transaction.html?hash="+term;}
+        if (JSON.parse(JSON.parse(_data).result.data).type == 1) {window.location.href = "./BlockTransaction.html?hash="+term;}
+        //if (JSON.parse(JSON.parse(_data).result.data).type == 2) {console.log("It's a 2")}
+      } 
+      // If a transaction wasn't found, look for a block
+      else {
+        response = await fetch(ExplorerConfig.nodeURL + "chain/blockByHash/"+term);
+        _data = await response.text();
+
+        // If block was found
+        if (JSON.parse(_data).success) {
+          window.location.href = "./block.html?hash="+term
+        }
+
       }
-    })
-  } else {
-    setSearchValueErrorState(true)
-  }
+
+
+    }
+  } 
 }
 
 function setSearchValueErrorState (state) {

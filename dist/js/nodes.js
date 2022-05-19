@@ -4,11 +4,10 @@ nodes = [{
   "URL": "node-1.siricoin.tech:5006"
 }, {
   "name": "Junaid shard chain",
-  "protocol": "http",
-  "URL": "47.250.59.81:5005"
-}]
-
-var xmlHttp = new XMLHttpRequest();
+  "protocol": "https",
+  "URL": "node-2.siricoin.tech:5006"
+}
+]
 
 $(document).ready(function () {
   localData.nodeTable = $('#nodes').DataTable({
@@ -24,7 +23,7 @@ $(document).ready(function () {
         targets: [0],
         render: function (data, type, row, meta) {
           if (type === 'display') {
-            data = '<span title="' + data.address + '"><svg data-jdenticon-value="' + data.address + '" width="20" height="20" style="vertical-align: middle;"></svg> ' + data.name
+            data = '<span title="' + data.address + '"><img src=./dist/img/node.svg width="23" height="23" style="vertical-align: middle;"></img> ' + "⠀" + data.name
           } else if (type === 'sort') {
             data = data.name
           }
@@ -63,9 +62,6 @@ async function getAndDrawNodeStats () {
 
 
         var node = nodes[i]
-        console.log(node.URL)
-
-        hist = []
 
         if (node.protocol == "https") {_https = true} else {_https = false}
 

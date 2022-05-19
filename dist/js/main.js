@@ -1,8 +1,6 @@
 var recentBlocks, topBlockHeight, blockchainChart, blockchainChartData, blockchainChartOptions
 
-var xmlHttp = new XMLHttpRequest();
-
-$(document).ready(function () {
+$(document).ready(async function () {
   checkForSearchTerm()
 
   blockchainChartOptions = {
@@ -97,7 +95,7 @@ $(document).ready(function () {
       targets: 1,
       render: function (data, type) {
         if (type === 'display') {
-          data = '<a href="./block.html?hash=' + data + '">' + data + '</a>' // TODO: UPDATE BLOCK 
+          data = '<a href="./block.html?hash=' + data + '">' + data + '</a>'
         }
         return data
       }
@@ -150,33 +148,32 @@ $(document).ready(function () {
     setTransactionPoolTimer()
 })
 
-function getAndDisplayLastBlockHeader() {
-
-      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/length", false );
-      xmlHttp.send()
-      __height = JSON.parse(xmlHttp.responseText).result
+async function getAndDisplayLastBlockHeader() {
+      response = await fetch(ExplorerConfig.nodeURL+"chain/length");
+      _data = await response.text();
+      __height = JSON.parse(_data).result
       if (__height !== topBlockHeight) {
         topBlockHeight = __height
         updateRecentBlocks(recentBlocks)
       }
 
-      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"stats", false );
-      xmlHttp.send()
-      _stats = JSON.parse(xmlHttp.responseText)
+      response = await fetch(ExplorerConfig.nodeURL+"stats");
+      _data = await response.text();
+      _stats = JSON.parse(_data)
       $('#blockchainHeight').text(__height)
       $('#blockchainDifficulty').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(_stats.result.chain.difficulty))
-      $('#blockchainReward').text(ExplorerConfig.blockReward)
+      $('#blockchainReward').text(ExplorerConfig.blockReward + " " + ExplorerConfig.ticker)
       $('#blockchainTransactions').text(_stats.result.coin.transactions)
-      $('#blockchainCirculatingSupply').text(_stats.result.coin.supply)
-      $('#blockchainTotalSupply').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(ExplorerConfig.maxSupply))
+      $('#blockchainCirculatingSupply').text(_stats.result.coin.supply + " " + ExplorerConfig.ticker)
+      $('#blockchainTotalSupply').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(ExplorerConfig.maxSupply) + " " + ExplorerConfig.ticker)
     }
   
 
-function updateTransactionPool(table) {
+async function updateTransactionPool(table) {
       table.clear()
-      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"get/nLastTxs/10", false );
-      xmlHttp.send()
-      ____transactions = JSON.parse(xmlHttp.responseText)
+      response = await fetch(ExplorerConfig.nodeURL+"get/nLastTxs/10");
+      _data = await response.text();
+      ____transactions = JSON.parse(_data)
 
       i = ____transactions.result.length; ctn = true
       while (ctn) {
@@ -191,7 +188,7 @@ function updateTransactionPool(table) {
 
         table.row.add([
           _Type,
-          _Amount,
+          _Amount + " " + ExplorerConfig.ticker,
           _To,
           {
             url: URL_link,
@@ -199,10 +196,11 @@ function updateTransactionPool(table) {
           }
         ]) 
 
-    
+        $("#transactionPoolCount").text(____transactions.result.length)
     }
  
     table.draw(false)
+    
 
     checkForSearchTerm()
 
@@ -211,17 +209,19 @@ function updateTransactionPool(table) {
     
 
 
-function updateRecentBlocks(table) {
+async function updateRecentBlocks(table) {
       table.clear()
-      xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/length", false );
-      xmlHttp.send()
-      Block_Height = JSON.parse(xmlHttp.responseText).result
+      response = await fetch(ExplorerConfig.nodeURL+"chain/length");
+      _data = await response.text();
+      
+      Block_Height = JSON.parse(_data).result
 
       for (var i = 0; i < 10; i++) {
         Block_to_Search = Block_Height-i-1
-        xmlHttp.open( "GET", ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search, false );
-        xmlHttp.send()
-        Block_Data = JSON.parse(xmlHttp.responseText)
+        response = await fetch(ExplorerConfig.nodeURL+"chain/block/"+Block_to_Search);
+        _data = await response.text();
+        
+        Block_Data = JSON.parse(_data)
         
 
         table.row.add([
@@ -237,4 +237,5 @@ function updateRecentBlocks(table) {
         ])
       }
       table.draw(false)
+      $("#BlockCount").text(i)
     }

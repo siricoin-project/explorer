@@ -5,7 +5,7 @@ response = await fetch(ExplorerConfig.nodeURL+"get/transaction/"+hash);
 _data = await response.text();
 
 if (JSON.parse(JSON.parse(_data).result.data).type == 1) { window.location.replace("./BlockTransaction.html?hash="+hash) }
-
+if (JSON.parse(JSON.parse(_data).result.data).type == 2) { window.location.replace("./Web3_Transaction.html?hash="+hash) }
 if (JSON.parse(JSON.parse(_data).result.data).type == 0) {
 
   $('#transactionHeaderHash').text(hash)

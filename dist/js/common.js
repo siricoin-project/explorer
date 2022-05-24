@@ -34,11 +34,20 @@ function isHash (str) {
   return regex.test(str.replace("0x", ""))
 }
 
+function isAddr (str) {
+  return (/^(0x){1}[0-9a-fA-F]{40}$/i.test(str));
+} 
+
 async function searchForTerm (term) {
   term = term.trim()
   /* Allow commas in a height search */
   term = term.replace(',', '')
-
+  
+  
+  // If address
+  if (isAddr(term)) {
+    window.location.href = "./address.html?address="+term
+  }
 
   // Check if block height
   if (parseInt(term).toString() === term) {
@@ -46,20 +55,19 @@ async function searchForTerm (term) {
     
   } 
   else {
+    if (!term.startsWith("0x")) { term = "0x" + term }
+
     // If it's a hash of some sort
     if (isHash(term)) {
 
-      if (!term.startsWith("0x")) { term = "0x" + term }
       response = await fetch(ExplorerConfig.nodeURL + "get/transaction/"+term);
       _data = await response.text();
-
-
 
       // If a transaction was found
       if (JSON.parse(_data).success) {
         if (JSON.parse(JSON.parse(_data).result.data).type == 0) {window.location.href = "./transaction.html?hash="+term;}
         if (JSON.parse(JSON.parse(_data).result.data).type == 1) {window.location.href = "./BlockTransaction.html?hash="+term;}
-        //if (JSON.parse(JSON.parse(_data).result.data).type == 2) {console.log("It's a 2")}
+        if (JSON.parse(JSON.parse(_data).result.data).type == 2) {window.location.href = "./Web3_Transaction.html?hash="+term;}
       } 
       // If a transaction wasn't found, look for a block
       else {
@@ -70,11 +78,10 @@ async function searchForTerm (term) {
         if (JSON.parse(_data).success) {
           window.location.href = "./block.html?hash="+term
         }
-
       }
 
 
-    }
+    } 
   } 
 }
 

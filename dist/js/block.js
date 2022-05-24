@@ -5,7 +5,6 @@ $(document).ready(async function () {
     response = await fetch(ExplorerConfig.nodeURL + "chain/block/" + hash);
     _data = await response.text();
     hash = JSON.parse(_data).result.miningData.proof
-    console.log(hash)
     
   }
 

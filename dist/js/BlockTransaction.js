@@ -4,7 +4,8 @@ $(document).ready(async function () {
 response = await fetch(ExplorerConfig.nodeURL+"get/transaction/"+hash);
 _data = await response.text();
 
-
+if (JSON.parse(JSON.parse(_data).result.data).type == 0) { window.location.replace("./transaction.html?hash="+hash) }
+if (JSON.parse(JSON.parse(_data).result.data).type == 2) { window.location.replace("./Web3_Transaction.html?hash="+hash) }
 
 TX_Type = JSON.parse(JSON.parse(_data).result.data).type
 
@@ -24,7 +25,5 @@ $('#blockHeight').text(JSON.parse(_data).result.height)
 $('#blockHash').text(blck_hash)
 $('#transactionMiner').text(JSON.parse(_data).result.miningData.miner)
 $('#transactionReward').text(ExplorerConfig.blockReward + " " + ExplorerConfig.ticker)}
-
-if (TX_Type == 0) { window.location.replace("./transaction.html?hash="+hash) }
 
 })

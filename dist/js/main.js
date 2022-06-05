@@ -136,7 +136,6 @@ $(document).ready(async function () {
       }, 15000)
     }
     setLastBlockTimer()
-
     updateTransactionPool(localData.transactionPool)
 
     function setTransactionPoolTimer() {
@@ -147,6 +146,18 @@ $(document).ready(async function () {
     }
     setTransactionPoolTimer()
 })
+
+
+function formatHashrate(rate, decimals) {
+  if (rate / 1e+21 > 1.0) {return (rate / 1e+21).toFixed(decimals) + " PH/s"}
+  if (rate / 1000000000000000000 > 1.0) {return (rate / 1000000000000000000).toFixed(decimals) + " EH/s"}
+  if (rate / 1000000000000 > 1.0) {return (rate / 1000000000000).toFixed(decimals) + " TH/s"}
+  if (rate / 1000000000 > 1.0) {return (rate / 1000000000).toFixed(decimals) + " GH/s"}
+  if (rate / 1000000 > 1.0) {return (rate / 1000000).toFixed(decimals) + " MH/s"}
+  if (rate / 1000.0 > 1.0) { return (rate / 1000).toFixed(decimals) + " KH/s"}
+  return rate.toFixed(decimals) + " H/s"
+}
+
 
 async function getAndDisplayLastBlockHeader() {
       response = await fetch(ExplorerConfig.nodeURL+"chain/length");
@@ -162,6 +173,7 @@ async function getAndDisplayLastBlockHeader() {
       _stats = JSON.parse(_data)
       $('#blockchainHeight').text(__height)
       $('#blockchainDifficulty').text(new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "long" }).format(_stats.result.chain.difficulty))
+      $('#blockchainHashRate').text(formatHashrate(_stats.result.chain.difficulty / ExplorerConfig.blockTime, 3))
       $('#blockchainReward').text(ExplorerConfig.blockReward + " " + ExplorerConfig.ticker)
       $('#blockchainTransactions').text(_stats.result.coin.transactions)
       $('#blockchainCirculatingSupply').text(_stats.result.coin.supply + " " + ExplorerConfig.ticker)

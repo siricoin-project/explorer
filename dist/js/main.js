@@ -196,7 +196,7 @@ async function updateTransactionPool(table) {
         ____dataJSON = JSON.parse(____result.data);
         if (____dataJSON.type == 2) { _Type = "Web3 Transaction"; var tx = new ethereumjs.Tx(____dataJSON.rawTx); _To = '0x'+tx.to.toString('hex').toUpperCase(); _Amount = parseInt(tx.value.toString('hex') || '0', 16) / (10**18); URL_link = "./Web3_Transaction.html?hash="+____hash; }
         if (____dataJSON.type == 1) { _Type = "Miner Payout"; _To = JSON.parse(JSON.stringify(____dataJSON)).blockData.miningData.miner; _Amount = ExplorerConfig.blockReward; URL_link = "BlockTransaction.html?hash=" + ____hash }
-        if (____dataJSON.type == 0) { _Type = "Transaction"; _To = ____dataJSON.to.toUpperCase(); _Amount = ____dataJSON.tokens; URL_link = "transaction.html?hash=" + ____hash}
+        if (____dataJSON.type == 0) { _Type = "Transaction"; _To = ____dataJSON.to; _Amount = ____dataJSON.tokens; URL_link = "transaction.html?hash=" + ____hash}
 
         table.row.add([
           _Type,

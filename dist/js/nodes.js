@@ -6,6 +6,11 @@ nodes = [{
   "name": "Junaid shard chain",
   "protocol": "https",
   "URL": "node-2.siricoin.tech:5006"
+},
+{
+  "name": "Yanis shard chain",
+  "protocol": "https",
+  "URL": "sirinode1.raptorchain.io:443"
 }
 ]
 
@@ -43,7 +48,7 @@ $(document).ready(function () {
       },
     ],
     order: [
-      [0, 'dsc']
+      [2, 'dsc']
     ],
     autoWidth: false
   }).columns.adjust().responsive.recalc().draw(false)

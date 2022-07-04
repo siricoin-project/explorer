@@ -1,6 +1,14 @@
 $(document).ready(async function () {
   addr = getQueryStringParam('address')
 
+
+  var wait = (ms) => {
+    var start = Date.now();
+    while (Date.now() - start < ms) {
+      Math.random();
+    }
+}
+
   function isAddr (str) {
     return (/^(0x){1}[0-9a-fA-F]{40}$/i.test(str));
   } 
@@ -44,24 +52,40 @@ $(document).ready(async function () {
         autoWidth: false
       }).columns.adjust().responsive.recalc()
 
-      for (var i = 1; i < (JSON.parse(_data).result.transactions).length; i++) {
-        var txn = JSON.parse(_data).result.transactions[i]
-        response = await fetch(ExplorerConfig.nodeURL + "get/transaction/" + txn);
-        __data = JSON.parse(JSON.parse(await response.text()).result.data)
-        console.log(__data.type)
-        if (__data.type == 0) { _Type = "Transaction"; _To = __data.to.toUpperCase(); _Amount = __data.tokens; URL_link = "transaction.html?hash=" + txn}
+
+
+      const chunkSize = 50;
+      const arr = (JSON.parse(_data).result.transactions).reverse();
+      const groups = arr.map((e, i) => { 
+     return i % chunkSize === 0 ? arr.slice(i, i + chunkSize) : null; 
+    }).filter(e => { return e; });
+
+    indx = 1
+    $("#transactionCount").text((JSON.parse(_data).result.transactions).length-1)
+    for (var l = 0; (l < (groups).length); l++) {
+      response = await fetch(ExplorerConfig.nodeURL + "get/transactions/" + (groups[l]).toString());
+      all_Txs = (await response.json())["result"]
+      console.log(all_Txs)
+
+      for (var i = 0; i < (all_Txs).length; i++) {
+        __data = JSON.parse(all_Txs[i]["data"])
+        var txn = all_Txs[i]["hash"]
+
+        if (__data.type == 0) { _Type = "Transaction"; _To = __data.to; _Amount = __data.tokens; URL_link = "transaction.html?hash=" + txn}
         if (__data.type == 1) { _Type = "Miner Payout"; _To = JSON.parse(JSON.stringify(__data)).blockData.miningData.miner; _Amount = ExplorerConfig.blockReward; URL_link = "BlockTransaction.html?hash=" + txn }
-        if (__data.type == 2) { _Type = "Web3 Transaction"; var tx = new ethereumjs.Tx(__data.rawTx); _To = '0x'+tx.to.toString('hex').toUpperCase(); _Amount = parseInt(tx.value.toString('hex') || '0', 16) / (10**18); URL_link = "./Web3_Transaction.html?hash="+txn; }
+        if (__data.type == 2) { _Type = "Web3 Transaction"; var tx = new ethereumjs.Tx(__data.rawTx); _To = '0x'+tx.to.toString('hex'); _Amount = parseInt(tx.value.toString('hex') || '0', 16) / (10**18); URL_link = "./Web3_Transaction.html?hash="+txn; }
 
         transactions.row.add([
-          (JSON.parse(_data).result.transactions).length-i,
+          indx,
           _Type,
           _Amount + " " + ExplorerConfig.ticker,
           _To,
           txn
         ]) 
         transactions.draw(false)
-        $("#transactionCount").text((JSON.parse(_data).result.transactions).length-1)
+        indx +=1
       }
+      wait(100)
+    }
     } }
   )

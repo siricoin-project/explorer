@@ -28,7 +28,7 @@ $(document).ready(function () {
         targets: [0],
         render: function (data, type, row, meta) {
           if (type === 'display') {
-            data = '<span title="' + data.address + '"><img src=./dist/img/node.svg width="23" height="23" style="vertical-align: middle;"></img> ' + "⠀" + data.name
+            data = '<span title="' + data.address + '">' + data.online + "⠀" + data.name
           } else if (type === 'sort') {
             data = data.name
           }
@@ -69,17 +69,26 @@ async function getAndDrawNodeStats () {
         var node = nodes[i]
 
         if (node.protocol == "https") {_https = true} else {_https = false}
-
-        response = await fetch(node.protocol + "://" + node.URL+"/stats");
-        _data = await response.text();
-
+        try {
+          response = await fetch(node.protocol + "://" + node.URL+"/stats");
+          _data = await response.text();
+          online = response.ok
+        } catch {online = false}
+      
+      
+        if (online) {
+          _height = JSON.parse(_data).result.chain.length
+          _txs = JSON.parse(_data).result.coin.transactions
+        } else {
+          _height = 0
+          _txs = 0
+        }
         
-        _height = JSON.parse(_data).result.chain.length
-        _txs = JSON.parse(_data).result.coin.transactions
-
+        if (online == true) {online = "✔"} else {online = "❌"}
         localData.nodeTable.row.add([
           {
-            name: node.name + "",
+            online: online,
+            name: node.name,
             address: node.protocol + "://" + node.URL
           },
           {
